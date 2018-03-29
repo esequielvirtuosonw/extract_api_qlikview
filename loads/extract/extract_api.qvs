@@ -1,0 +1,48 @@
+// *******************************************************************************
+// Empresa: Neoway Business Solutions
+// Arquivo: extract_teste_bi_api - BI-API
+// Objetivo: Realizar a extração dos dados de nossa API
+// Criado em: 16/02/2018
+// Desenvolvedor: raphael.pacheco@neoway.com.br
+// *******************************************************************************
+
+$(Include=..\..\config\config_general.qvs);
+$(Include=mappings\mapping_$(entity).qvs);
+
+Call getVars;
+Call getToken;
+
+Set ErrorMode = 0;
+
+Do While regs = limit
+
+	Let page = i + 1;
+
+	Trace ##############################################################;
+	Trace .                    $(entity) Page $(page)                   ;
+	Trace ##############################################################;
+
+	Let skip = i * limit;
+
+	Call getConnection;
+
+	RestConnectorMasterTable:
+	$(requestData)
+
+	Disconnect;
+
+	Call getRegs;
+	
+	Trace >>>>>>>>>>> $(regs) records of $(limit) requested <<<<<<<<<<<;
+
+	$(loadData)
+
+	DROP TABLE RestConnectorMasterTable;
+
+	Let i = i + 1;
+
+Loop
+
+Set ErrorMode = 1;
+
+Call typeStore('$(typeStore)');

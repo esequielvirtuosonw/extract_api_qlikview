@@ -1,0 +1,57 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Name Of Request Group",
+		"_postman_id": "f725ce4d-35bf-5447-ba6b-5ef8f2ad7b19",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Request Login API",
+			"request": {
+				"url": "https://api.neoway.com.br/auth/token",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \n   \"application\": \"yourAplicationName\",\n   \"application_secret\": \"yourSecretWord\" \n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Requisição API",
+			"request": {
+				"url": "https://api.neoway.com.br/services/bi/<nameOfEntity>",
+				"method": "GET",
+				"header": [
+					{
+						"key": "authorization",
+						"value": "Bearer <yourTokenAccess>",
+						"description": ""
+					},
+					{
+						"key": "skip",
+						"value": "0",
+						"description": ""
+					},
+					{
+						"key": "limit",
+						"value": "1",
+						"description": ""
+					}
+				],
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

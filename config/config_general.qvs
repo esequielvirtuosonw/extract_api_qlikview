@@ -1,0 +1,189 @@
+SET ThousandSep='.';
+SET DecimalSep=',';
+SET MoneyThousandSep='.';
+SET MoneyDecimalSep=',';
+SET MoneyFormat='R$ #.##0,00;-R$ #.##0,00';
+SET TimeFormat='hh:mm:ss';
+SET DateFormat='DD/MM/YYYY';
+SET TimestampFormat='DD/MM/YYYY hh:mm:ss[.fff]';
+SET MonthNames='jan;fev;mar;abr;mai;jun;jul;ago;set;out;nov;dez';
+SET DayNames='seg;ter;qua;qui;sex;sáb;dom';
+SET LongMonthNames='janeiro;fevereiro;março;abril;maio;junho;julho;agosto;setembro;outubro;novembro;dezembro';
+SET LongDayNames='segunda-feira;terça-feira;quarta-feira;quinta-feira;sexta-feira;sábado;domingo';
+SET FirstWeekDay=6;
+SET BrokenWeeks=1;
+SET ReferenceDay=0;
+SET FirstMonthOfYear=1;
+SET CollationLocale='pt-BR';
+
+Sub getVars
+
+	Let host = 'https://api.neoway.com.br';
+	Let entity = Subfield(DocumentName(),'.qvw',1);
+	Let skip = 0;
+	Let limit = 10000;
+	Let regs = $(limit);
+	Let i = 0;
+	Set ErrorMode = 0;
+	Let dateStart = '';
+	Let gti = 0;
+
+End Sub
+
+Sub vPath
+
+	SET vPathFiles = '..\..\files\data_mirrors\';
+	SET vPathStorePG = '..\..\files\store_pg\';
+	SET vPathConfig = '..\..\config\';
+
+End Sub
+
+Sub getConnection
+
+	CUSTOM CONNECT TO "Provider=QvRestConnector.exe;url=$(host)/services/bi/$(entity);timeout=30;method=GET;autoDetectResponseType=true;keyGenerationStrategy=3;useWindowsAuthentication=false;useCertificate=No;certificateStoreLocation=CurrentUser;certificateStoreName=My;queryHeaders=Authorization%2Bearer $(token)%1skip%2$(skip)%1limit%2$(limit);PaginationType=None;XUserId=RNaNLIB;XPassword=faFRMfC;";
+
+	Call ConnectionVerify;
+
+End Sub
+
+Sub getToken
+
+	If '$(gti)' = 0 Then 
+
+		Call vPath;
+		$(Include=$(vPathConfig)config_client.qvs);
+
+	End If
+
+	CUSTOM CONNECT TO "Provider=QvRestConnector.exe;url=$(host)/auth/token;timeout=30;method=POST;requestBody={
+		%3application%3 : %3$(application)%3,
+		%3application_secret%3 : %3$(secret)%3
+	};autoDetectResponseType=true;keyGenerationStrategy=0;useWindowsAuthentication=false;useCertificate=No;certificateStoreLocation=CurrentUser;certificateStoreName=My;PaginationType=None;XUserId=DRLYSeB;XPassword=TGJCBEA;";
+
+	token:
+	SQL SELECT 
+		"token"
+	FROM JSON (wrap on) "root";
+
+	Let token = Peek('token');
+
+	Drop Table token;
+
+	Let gti = gti + 1;
+
+End Sub
+
+Sub ConnectionVerify
+
+	verify:
+	SQL SELECT 
+		"count",
+		"__KEY_root"
+	FROM JSON (wrap on) "root" PK "__KEY_root";
+
+	Drop Table verify;
+
+	If Len('$(ScriptErrorDetails)') > 0 or '$(ScriptErrorCount)' > 0 Then
+
+		Trace >>>>>>>>>> Error in connection. Get new token access <<<<<<<<<<;
+		
+		Call getToken;
+
+		Set ScriptErrorDetails = '';
+		Set ScriptErrorCount = 0;
+
+		Call getConnection;
+
+	End If
+
+End Sub
+
+Sub getRegs
+
+	[root]:
+	LOAD	
+		[count],
+		[__KEY_root]
+	RESIDENT RestConnectorMasterTable
+	WHERE NOT IsNull([__KEY_root]);
+
+	Let regs = Peek('count',0,'root');
+	Drop Table root;
+
+End Sub
+
+Sub vExtVerify (vExt, vProperties)
+
+	If Len('$(vExt)') < 1 Then 
+		Let vExt = 'qvd';
+	EndIf
+
+	If Len('$(vProperties)') < 1 Then 
+		Let vProperties = 'qvd';
+	EndIf
+
+End Sub
+
+Sub vCreateFolders(vPath, entity, vExt);
+
+	Call vExtVerify(vExt, Null());
+
+	LET FirstTable = TableName(0);
+
+	If (FileTime('$(vPath)$(FirstTable).$(vExt)') > 0) THEN		
+			
+	ELSE
+
+		EXECUTE cmd.exe /C MD "$(vPath)/$(entity)";
+			
+	ENDIF
+
+End Sub
+
+Sub vStoreFile(vPath, entity, vExt, vProperties);
+
+	Call vExtVerify(vExt, vProperties);
+
+	LET table = TableName(0);
+	SET ErrorMode = 0;
+
+	DO WHILE ScriptErrorCount < 1
+
+	     STORE [$(table)] into [$(vPath)$(entity)\$(table).$(vExt)] ($(vProperties));
+	     DROP TABLE [$(table)];
+	     LET table = TableName(0);
+
+	LOOP
+
+	SET ErrorMode =1;
+
+End Sub
+
+Sub typeStore(typeStore)
+
+	If Len('$(typeStore)') = 0 Then
+
+		Let typeStore = 'CSV';
+
+	End If
+
+	Switch '$(typeStore)'
+		Case 'CSV'
+			Call vCreateFolders('$(vPathFiles)','$(entity)','csv');
+			Call vStoreFile('$(vPathFiles)','$(entity)','csv','txt, delimiter is ";"');
+		Case 'QVD'
+			Call vCreateFolders('$(vPathFiles)','$(entity)',Null());
+			Call vStoreFile('$(vPathFiles)','$(entity)',Null(),Null());
+		Case 'INSERT_PG'
+			Trace >>>>>>>>>> Insert data in PostgreSql <<<<<<<<<<<;
+			Call vCreateFolders('$(vPathStorePG)','$(entity)','txt');
+			Call vStoreFile('$(vPathStorePG)','$(entity)','txt','txt, delimiter is ";"');
+
+			$(Include=$(vPathConfig)config_client.qvs);
+			Call storePg;
+		Default
+			Call vCreateFolders('$(vPathFiles)','$(entity)','csv');
+			Call vStoreFile('$(vPathFiles)','$(entity)','csv','txt, delimiter is ";"');
+	End Switch;
+
+End Sub

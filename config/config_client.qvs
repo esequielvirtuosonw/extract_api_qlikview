@@ -1,0 +1,44 @@
+Let application = 'yourAplicationName';
+Let secret = 'yourSecretWord';
+/* 
+	Options available for typeStore values
+		CSV
+		QVD
+		INSERT_PG
+	Observation: CSV is default value
+*/
+Let typeStore = 'CSV';
+/*
+	for insertions in PostgreSql, use access variables in that next sub (function storePg)
+*/
+// enter the name of ODBC connection
+Let dataBase = 'yourODBCConnectionName';
+
+Sub storePg
+	
+	ODBC CONNECT TO $(dataBase);
+
+	EXECUTE cmd.exe /C ICACLS "$(vPathStorePG)$(entity)" /grant everyone:(f) /t /c;
+
+	SQL CREATE SCHEMA IF NOT EXISTS $(entity);
+	
+	For Each file in FileList('$(vPathStorePG)$(entity)\*.txt')
+	
+		Let table = SubField(SubField('$(file)','$(entity)\',2),'.txt',1);
+		Let dir = SubField('$(file)','\$(table)',1);
+
+		SQL CREATE TABLE IF NOT EXISTS $(entity).$(table) (
+		    $($(entity)_$(table))
+		);
+
+		SQL DELETE FROM $(entity).$(table);
+
+		SQL COPY $(entity).$(table) FROM '$(file)' WITH CSV HEADER DELIMITER AS ';';
+
+	Next
+
+	DISCONNECT;
+
+	EXECUTE cmd.exe /C RMDIR "$(dir)" /S /Q;
+
+End Sub

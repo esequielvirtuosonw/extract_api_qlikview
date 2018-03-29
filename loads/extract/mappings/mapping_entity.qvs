@@ -1,0 +1,18 @@
+Let requestData = '';
+
+Let loadData = '';
+
+/*
+	For creating table on PostgreSql, is necessary define in variables 
+	the fields of tables that will be loaded.
+	You can do this creating variables for each table that will be populate 
+	in your database.
+	In that variables will be informed the fields and their types for the 
+	table that will be created.
+	For each table created you will create a variable.
+*/
+Let nameOfEntity_nameOfTable = '
+	nameOfField typeOfField,
+	nameOfField typeOfField
+	__KEY_results character varying(50)
+';
