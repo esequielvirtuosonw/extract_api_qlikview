@@ -10,9 +10,10 @@ You have to install Qlikview Personal Edition and Qlik REST Connector to execute
 We leave the installers of these two programs in this project. They are on programs folder of this project.
 
 Check the instalations guide in this two links.
-> [QlikView](#http://go.qlikview.com/rs/qliktech/images/Downloading_and_Starting_the_QlikView_Desktop_Installation.pdf)
 
-> [Qlik REST Connector](#https://help.qlik.com/en-US/connectors/Subsystems/REST_connector_help/Content/Install-QV-REST-connector.htm)
+[QlikView](#http://go.qlikview.com/rs/qliktech/images/Downloading_and_Starting_the_QlikView_Desktop_Installation.pdf)
+
+[Qlik REST Connector](#https://help.qlik.com/en-US/connectors/Subsystems/REST_connector_help/Content/Install-QV-REST-connector.htm)
 
 ## Configurations
 
@@ -26,7 +27,7 @@ You have to change some configurations in the project to make it work.
 
 4 - Configure bat file.
 
-> Most Important! Steps 2, 3 and 4 are usually provided by neoway after service delivery.
+> Most Important! Steps 2, 3 and 4 are provided by neoway after service delivery.
 
 ### ./config/config_client.qvs
 
