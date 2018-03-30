@@ -11,9 +11,9 @@ We leave the installers of these two programs in this project. They are on progr
 
 Check the instalations guide in this two links.
 
-[QlikView](#http://go.qlikview.com/rs/qliktech/images/Downloading_and_Starting_the_QlikView_Desktop_Installation.pdf)
+> [QlikView](http://go.qlikview.com/rs/qliktech/images/Downloading_and_Starting_the_QlikView_Desktop_Installation.pdf)
 
-[Qlik REST Connector](#https://help.qlik.com/en-US/connectors/Subsystems/REST_connector_help/Content/Install-QV-REST-connector.htm)
+> [Qlik REST Connector](https://help.qlik.com/en-US/connectors/Subsystems/REST_connector_help/Content/Install-QV-REST-connector.htm)
 
 ## Configurations
 
